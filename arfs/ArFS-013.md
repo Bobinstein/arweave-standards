@@ -14,6 +14,39 @@ Because of Arweave's permanent and immutable nature, traditional file structure 
 
 ## Specification
 
+### Metadata Format
+
+Metadata stored in any Arweave transaction tag will be defined in the following manner:
+
+```json
+{ "name": "Example-Tag", "value": "example-data" }
+```
+
+Metadata stored in the Transaction Data Payload will follow JSON formatting like below:
+
+```json
+{
+    "exampleField": "exampleData"
+}
+```
+
+fields with a `?` suffix are optional.
+
+```json
+{
+  "name": "My Project",
+  "description": "This is a sample project.",
+  "version?": "1.0.0",
+  "author?": "John Doe"
+}
+```
+
+Enumerated field values (those which must adhere to certain values) are defined in the format "value 1 | value 2".
+
+All UUIDs used for Entity-Ids are based on the [Universally Unique Identifier](https://en.wikipedia.org/wiki/Universally_unique_identifier) standard.
+
+There are no requirements to list ArFS tags in any specific order.
+
 ### Entity Types
 
 Arweave transactions are composed of transaction headers and data payloads.
@@ -446,6 +479,75 @@ Just like drives, private files must have the `Content-Type` tag set as `applica
 Content-Type: "application/octet-stream"
 ```
 
+### Content Types
+
+All transaction types in ArFS leverage a specific metadata tag for the Content-Type (also known as mime-type) of the data that is included in the transaction. ArFS clients must determine what the mime-type of the data is, in order for Arweave gateways and browsers to render this content appropriately.
+
+All public drive, folder, and file (metadata only) entity transactions all use a JSON standard, therefore they must have the following content type tag:
+
+```json
+Content-Type: '<application/json>'
+```
+
+However, a file's data transaction must have its mime-type determined. This is stored in the file's corresponding metadata transaction JSON's `dataContentType` as well as the content type tag in the data transaction itself.
+
+```json
+Content-Type: "<file's mime-type>"
+```
+
+All private drive, folder, and file entity transactions must have the following content type, since they are encrypted:
+
+```json
+Content-Type: '<application/octet-stream>'
+```
+
+### Other Tags
+
+ArFS enabled clients should include the following tags on their transactions to identify their application
+
+```json
+App-Name: "<defined application name eg. ArDrive"
+App-Version: "<defined version of the app eg. 0.5.0"
+Client?: "<if the application has multiple clients, they should be specified here eg. Web" 
+```
+
+
+
+### Extending Schemas
+
+Web app and clients can extend the ArFS Schema as needed by adding additional tags into the File and Folder MetaData Transaction JSON. This gives Developers additional flexibility to support specific application needs, without breaking the overall data model or impacting privacy.
+
+For example a Music Sharing App could use the following expanded File Metadata for specific music files.
+
+```json
+{
+    "name": "<user defined file name>",
+    "size": <computed file size - int>,
+    "lastModifiedDate": <timestamp for OS reported time of file's last modified date represented as milliseconds since unix epoch - int>,
+    "dataTxId": "<transaction id of stored data>",
+    "dataContentType": "<the mime type of the data associated with this file entity>",
+    "bandName": "<the name of the band/artist>",
+    "bandAlbum": "<the album of the band/artist>",
+    "albumSong": "<the title of the song>"
+}
+```
+
+Additionally, the above extended Metadata fields could be added directly as a transaction tag as well, in order to support GraphQL queries. 
+
+Arweave Transaction Headers can only fit a maximum of 2048 bytes total, so this must be taken into account by clients writing custom GQL tags.
+
 ### Diagrams
 
 Schema diagrams for public and private drives may be found [here](https://docs.ardrive.io/docs/arfs/entity-types.html#schema-diagrams).
+
+
+### Additional Resources
+
+## Resources
+
+For more information, documentation, and community support, refer to the following resources:
+
+- [Arweave Official Website](https://www.arweave.org/)
+- [Arweave Developer Documentation](https://docs.arweave.org/)
+- [Arweave Community Forums](https://community.arweave.org/)
+- [ArDrive Official Documentation](https://docs.ardrive.io/)
